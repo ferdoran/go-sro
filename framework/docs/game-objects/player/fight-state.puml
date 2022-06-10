@@ -1,0 +1,13 @@
+@startuml
+
+hide empty description
+
+state Idle
+state Combat
+
+[*] --> Idle
+Idle --> Combat : Receiving Damage
+Idle --> Combat : Inflicting Damage
+Combat --> Idle : 20s after last damage received or inflicted
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+
+hide empty description
+
+
+[*] --> Spawning
+Spawning --> Idle
+
+Idle --> Walking
+Idle --> Running
+Idle --> Sitting
+Idle --> Dead
+
+Walking --> Running
+Walking --> Idle
+Walking --> Sitting
+Walking --> Dead
+
+Running --> Walking
+Running --> Idle
+Running --> Sitting
+Running --> Dead
+
+Sitting --> Idle
+Sitting --> Dead
+
+@enduml

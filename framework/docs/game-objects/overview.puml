@@ -1,0 +1,40 @@
+@startuml
+
+hide circle
+hide empty methods
+hide empty fields
+
+class GameObject
+class EventZone
+class Player
+class COS
+class NPC
+class Item {
+  ID
+}
+class Character {
+  Position
+  RefObjectID
+}
+
+GameObject <|-- Character
+GameObject <|-- Item
+GameObject <|-- EventZone
+
+Character <|-- Player
+Character <|-- NPC
+
+NPC <|-- Monster
+NPC <|-- COS
+
+COS <|-- Cart
+COS <|-- GoldPet
+COS <|-- SilkPet
+COS <|-- Summoned
+
+Summoned <|-- Mercenary
+Summoned <|-- Captured
+Summoned <|-- Follower
+Summoned <|-- Assaulter
+
+@enduml

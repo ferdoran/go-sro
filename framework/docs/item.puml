@@ -1,0 +1,59 @@
+@startuml
+class Item {
+    id
+    stackSize
+    useable
+}
+class Weapon
+class Armor
+class Accessory
+class Alchemy
+enum WeaponType {
+    GLAIVE
+    SPEAR
+    BOW
+    SWORD
+    BLADE
+    SHIELD
+    2H_SWORD
+    1H_SWORD
+    DAGGER
+    XBOW
+    AXE
+    2H_STAFF
+    CLERIC_ROD
+    WARLOCK_ROD
+    BARD
+}
+enum ArmorType {
+    HAT
+    SHOULDER
+    CHEST
+    LEGS
+    SHOES
+    GLOVES
+}
+enum AccessoryType {
+    RING
+    EARRING
+    NECKLACE
+}
+
+' ============================== Item
+Item <|-- Weapon
+Item <|-- Armor
+Item <|-- Accessory
+Item <|-- Alchemy
+' ============================== Weapon
+Weapon -- WeaponType
+' ============================== Armor
+Armor -- ArmorType
+' ============================== Accessory
+Accessory -- AccessoryType
+' ============================== Alchemy
+Alchemy <|-- MagicStone
+Alchemy <|-- AttributeStone
+Alchemy <|-- Tablet
+Alchemy <|-- Element
+Alchemy <|-- Elixir
+@enduml

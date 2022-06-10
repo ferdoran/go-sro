@@ -1,0 +1,52 @@
+@startuml
+
+package "Communication Layer" {
+    [Gateway Server]
+    [Agent Server]
+    [Download Server]
+}
+
+package "Backend" {
+    [Geo Server/Engine]
+    [Spawn Engine]
+    [Skill Engine]
+    [Quest Engine]
+    [Event Engine]
+}
+
+package "Client" {
+    [Launcher]
+    [SRO_Client]
+}
+
+database "SRO DB" {
+    [Accounts]
+    [Events]
+    [Quests]
+    [World Config]
+    [Spawn Data]
+}
+
+
+[Launcher] -- [Gateway Server]
+[Launcher] -- [Download Server]
+
+[SRO_Client] -- [Gateway Server]
+[SRO_Client] -- [Agent Server]
+
+
+[Agent Server] -- [Geo Server/Engine]
+[Agent Server] -- [Spawn Engine]
+[Agent Server] -- [Skill Engine]
+[Agent Server] -- [Quest Engine]
+[Agent Server] -- [Event Engine]
+
+[Gateway Server] -- [Accounts]
+[Agent Server] -- [Accounts]
+
+[Quest Engine] -- [Quests]
+[Event Engine] -- [Events]
+[Geo Server/Engine] -- [World Config]
+[Spawn Engine] -- [Spawn Data]
+
+@enduml

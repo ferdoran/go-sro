@@ -1,0 +1,1 @@
+1	1907	CHAR_CH_MAN_ADVENTURER	xxx	xxx	xxx	xxx	0	1	1	1	0	0	1000000000	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	-1	0	-1	0	-1	0	-1	0	-1	6341	0	8000	0	18000	16	50	100	0	4	0	char\china\chinaman_adventurer.bsr	xxx	xxx	xxx	xxx	1	1	0	0	45	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	336860180	3	3000	1	2	40	70	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0

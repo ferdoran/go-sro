@@ -1,0 +1,43 @@
+@startuml
+class Account {
+    username
+    password
+    email
+}
+class Character {
+    name
+    race
+}
+class CharacterStats {
+    str
+    int
+    exp
+    skillExp
+    level
+}
+class Appearance {
+    gender
+    model
+    height
+    volume
+}
+class Item
+class Storage
+class Inventory
+
+' ============================== Account
+Account "1" *--{ "0..4" Character
+Account "1" *-- Storage
+
+' ============================== Character
+Character *-- Inventory
+' How many equipment slots does a character have?
+Character "1" --{ "0..*"  Item : Equipment
+Character o-- Appearance
+Character o-- CharacterStats
+Inventory --{ Item
+
+Account --{ Account : Friends
+
+Storage --{ Item
+@enduml
