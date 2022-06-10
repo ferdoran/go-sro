@@ -3,12 +3,9 @@ name: Build and Publish Agent Server Image
 on:
   push:
     branches:
-      - '**'
+      - 'main'
     tags:
       - 'v*.*.*'
-    pull_request:
-      branches:
-        - 'master'
 
 jobs:
   build-and-publish:
@@ -21,7 +18,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ferdoran/go-sro-agent-server
+            ${{ secrets.DOCKER_REGISTRY }}/go-sro/agent-server
           # add git short SHA as Docker tag
           tag-semver: |
             {{version}}
@@ -35,8 +32,9 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           context: ./agent-server
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and Push
         id: docker_build
         uses: docker/build-push-action@v2
