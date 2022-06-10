@@ -7,8 +7,8 @@ RUN GOOS=linux CGO_ENABLED=0 go build -o gateway-server gateway-server/server.go
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
-WORKDIR /etc/go-sro/
-COPY --from=builder /app/gateway-server/server gateway-server
+WORKDIR /etc/go-sro
+COPY --from=builder /app/gateway-server/server ./gateway-server
 
 EXPOSE 15779
 CMD ["./gateway-server"]
