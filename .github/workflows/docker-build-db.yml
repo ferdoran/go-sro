@@ -1,6 +1,7 @@
 name: Build and Publish DB Image
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
