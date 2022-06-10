@@ -1,6 +1,6 @@
 FROM golang:1.18.3 as builder
 RUN mkdir /app
-ADD .. /app
+ADD . /app
 WORKDIR /app
 RUN go clean --modcache
 RUN GOOS=linux CGO_ENABLED=0 go build -o agent-server agent-server/server.go
