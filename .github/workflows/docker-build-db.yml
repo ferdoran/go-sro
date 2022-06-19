@@ -41,7 +41,7 @@ jobs:
         with:
           context: .
           file: ./db/Dockerfile
-          platforms: linux/amd64,linux/x86_64
+          platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
