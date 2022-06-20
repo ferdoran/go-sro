@@ -19,6 +19,7 @@ gateway -right-> ag
 ag -- game
 ag -- shard
 ag -- chat
+chat --> game
 
 gateway -- db_acc
 game -- db_shard
