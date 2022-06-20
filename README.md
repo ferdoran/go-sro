@@ -4,6 +4,6 @@ written in Go.
 
 ## Architecture
 
-![architecture diagram](http://plantuml.com/plantuml/proxy?cache=no&src=https://raw.github.com/ferdoran/go-sro/_docs/architecture.puml)
+![architecture diagram](http://plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/ferdoran/go-sro/main/_docs/architecture.puml)
 
 The backend architecture consists of several components that may interact with each other.
