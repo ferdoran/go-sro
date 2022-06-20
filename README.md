@@ -2,6 +2,12 @@
 A custom server/backend implementation of the game Silkroad Online
 written in Go.
 
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ferdoran/go-sro)
+![Lines of code](https://img.shields.io/tokei/lines/github/ferdoran/go-sro)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ferdoran/go-sro/Build%20and%20Publish%20Gateway%20Server%20Image?label=Gateway%20Server)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ferdoran/go-sro/Build%20and%20Publish%20Gateway%20Server%20Image?label=Agent%20Server)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ferdoran/go-sro/Build%20and%20Publish%20Agent%20Server%20Image?label=DB)
+
 ## Architecture
 
 ![architecture diagram](http://plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/ferdoran/go-sro/main/_docs/architecture.puml)
