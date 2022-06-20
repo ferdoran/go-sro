@@ -1,0 +1,27 @@
+@startuml architecture
+
+collections "SRO Clients" as clients
+rectangle "Gateway Server" as gateway
+rectangle "Agent Server" as ag
+collections "Game Servers" as game
+rectangle "Shard Server" as shard
+rectangle "Download/Patch Server" as patch
+rectangle "Chat Server" as chat
+database "Account Data" as db_acc
+database "Shard Data" as db_shard
+
+clients -- patch
+clients -- gateway
+clients -- ag
+
+gateway -right-> ag
+
+ag -- game
+ag -- shard
+ag -- chat
+
+gateway -- db_acc
+game -- db_shard
+shard -- db_shard
+
+@enduml
