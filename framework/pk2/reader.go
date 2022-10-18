@@ -197,7 +197,7 @@ func (r *Pk2Reader) ReadEntry(entry *PackFileEntry) []byte {
 
 func (r *Pk2Reader) ExtractFiles(outputDir string) {
 	if r.finishedIndexing {
-		os.Mkdir(outputDir, os.ModeDir)
+		os.Mkdir(outputDir, os.ModePerm)
 		counter := 0
 		r.Directory.Extract(outputDir, *r, &counter, r.TotalFiles())
 	}

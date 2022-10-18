@@ -55,7 +55,7 @@ func (d *Directory) PrintDirs() {
 }
 
 func (d *Directory) Extract(outputDir string, reader Pk2Reader, counter *int, maxFiles int) {
-	err := os.Mkdir(outputDir+string(os.PathSeparator)+d.Name, os.ModeDir)
+	err := os.Mkdir(outputDir+string(os.PathSeparator)+d.Name, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,7 +76,8 @@ func (d *Directory) Extract(outputDir string, reader Pk2Reader, counter *int, ma
 func extractFile(reader Pk2Reader, entry PackFileEntry, outputFile string) {
 	f, err := os.Create(outputFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	f.Write(reader.ReadEntry(&entry))
 	f.Close()
