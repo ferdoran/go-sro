@@ -30,9 +30,9 @@ type RtNavmeshTerrain struct {
 	RtNavmeshBase
 	Region Region
 
-	tileMap   [TilesTotal]RtNavmeshTile
-	planeMap  [BlocksTotal]RtNavmeshPlane
-	heightMap [VerticesTotal]float32
+	TileMap   [TilesTotal]RtNavmeshTile
+	PlaneMap  [BlocksTotal]RtNavmeshPlane
+	HeightMap [VerticesTotal]float32
 
 	Objects []RtNavmeshInstObj `json:"-"`
 	Cells   []RtNavmeshCellQuad
@@ -61,15 +61,15 @@ func (t RtNavmeshTerrain) GetCell(index int) RtNavmeshCell {
 }
 
 func (t RtNavmeshTerrain) GetTile(x, y int) RtNavmeshTile {
-	return t.tileMap[y*TilesY+x]
+	return t.TileMap[y*TilesY+x]
 }
 
 func (t RtNavmeshTerrain) GetHeight(x, y int) float32 {
-	return t.heightMap[y*VerticesY+x]
+	return t.HeightMap[y*VerticesY+x]
 }
 
 func (t RtNavmeshTerrain) GetPlane(xBlock, zBlock int) RtNavmeshPlane {
-	return t.planeMap[zBlock*BlocksY+xBlock]
+	return t.PlaneMap[zBlock*BlocksY+xBlock]
 }
 
 func (t RtNavmeshTerrain) ResolveCell(pos *math32.Vector3) (RtNavmeshCellQuad, error) {
@@ -256,20 +256,20 @@ func (t *RtNavmeshTerrain) ToJson() []byte {
 	sb.WriteString(fmt.Sprintf(`"file":"%s",`, t.Filename))
 	sb.WriteString(fmt.Sprintf(`"region":{"id":%d,"x":%d,"z":%d},`, t.Region.ID, t.Region.X, t.Region.Y))
 	sb.WriteString(`"heights": [`) // tiles open
-	for i, h := range t.heightMap {
+	for i, h := range t.HeightMap {
 		sb.WriteString(fmt.Sprintf("%f", h))
-		if i < len(t.heightMap)-1 {
+		if i < len(t.HeightMap)-1 {
 			sb.WriteString(",")
 		}
 	}
 	sb.WriteString("],")
 	sb.WriteString(`"tiles": [`) // tiles open
-	for i, tile := range t.tileMap {
+	for i, tile := range t.TileMap {
 		sb.WriteString("{") // tile open
 		sb.WriteString(fmt.Sprintf(`"cellId":%d,`, tile.CellIndex))
 		sb.WriteString(fmt.Sprintf(`"flag":%d`, tile.Flag))
 		sb.WriteString("}") // tile close
-		if i < len(t.tileMap)-1 {
+		if i < len(t.TileMap)-1 {
 			sb.WriteString(",")
 		}
 	}

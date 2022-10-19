@@ -159,13 +159,13 @@ func (l *Loader) LoadTerrainMesh(filepath string, regionId int16) error {
 	terrain.InternalEdges = internalEdges
 
 	// 5. Read TileMap
-	terrain.tileMap = l.loadTerrainTileMap(fileContent, &readIndex)
+	terrain.TileMap = l.loadTerrainTileMap(fileContent, &readIndex)
 
 	// 6. Read Height Map
-	terrain.heightMap = l.loadTerrainHeightMap(fileContent, &readIndex)
+	terrain.HeightMap = l.loadTerrainHeightMap(fileContent, &readIndex)
 
 	// 7. Read Plane Map
-	terrain.planeMap = l.loadTerrainPlaneMap(fileContent, &readIndex)
+	terrain.PlaneMap = l.loadTerrainPlaneMap(fileContent, &readIndex)
 
 	l.RegionData[regionId] = terrain
 
