@@ -91,6 +91,8 @@ func drawToolbar() {
 		loader.LoadNavMeshInfos()
 		logrus.Info("finished loading navmesh infos")
 		loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_6587.nvm", 25991)
+		loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_6588.nvm", 25992)
+		loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_6687.nvm", 26247)
 		//loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_6687.nvm", 26246)
 		loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_61a5.nvm", 24997)
 		loader.LoadTerrainMesh(loader.NavMeshPath+string(os.PathSeparator)+"nv_61a6.nvm", 24998)
@@ -109,7 +111,7 @@ func drawToolbar() {
 		logrus.Info("Saving Navmesh as JSON")
 		terrain := terrainList[int16(selectedRegionId)]
 		ioutil.WriteFile(fmt.Sprintf("%d.obj", selectedRegionId), terrain.ToBlenderObj(), fs.ModePerm)
-		ioutil.WriteFile(fmt.Sprintf("%d.json", selectedRegionId), terrain.ToJson(), fs.ModePerm)
+		ioutil.WriteFile(fmt.Sprintf("navmesh-viewer/%d.json", selectedRegionId), terrain.ToJson(), fs.ModePerm)
 	})
 	nextX = doCheckbox("Show Only Blocked Terrain Cells", &showOnlyBlockedRegionCells, checkBoxRect(nextX))
 	nextX = doCheckbox("Show Object's Internal Edges", &showObjectsInternalEdges, checkBoxRect(nextX))

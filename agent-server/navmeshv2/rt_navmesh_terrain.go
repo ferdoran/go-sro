@@ -3,6 +3,7 @@ package navmeshv2
 import (
 	"fmt"
 	"github.com/g3n/engine/math32"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -72,6 +73,9 @@ func (t RtNavmeshTerrain) GetPlane(xBlock, zBlock int) RtNavmeshPlane {
 }
 
 func (t RtNavmeshTerrain) ResolveCell(pos *math32.Vector3) (RtNavmeshCellQuad, error) {
+	if pos.X < 0 || pos.X > TerrainWidth || pos.Z < 0 || pos.Z > TerrainHeight {
+		return RtNavmeshCellQuad{}, fmt.Errorf("position %v is not in terrain", pos)
+	}
 	tile := t.GetTile(int(pos.X/TileWidth), int(pos.Z/TileHeight))
 	return t.Cells[tile.CellIndex], nil
 }
@@ -179,14 +183,98 @@ func (t RtNavmeshTerrain) ToBlenderObj() []byte {
 	return []byte(sb.String())
 }
 
-func (t RtNavmeshTerrain) ToJson() []byte {
+func (t *RtNavmeshTerrain) DetectUnmappedObjectEdges() {
+	for _, o := range t.Objects {
+		for _, ge := range o.Object.GlobalEdges {
+			if !ge.Flag.IsBlocked() && !ge.Flag.IsBridge() {
+				// potential linking candidate
+				if ge.DstCellIndex == -1 || ge.DstCellIndex == 65535 {
+					a := ge.Line.A.Clone().ApplyMatrix4(o.LocalToWorld)
+					b := ge.Line.B.Clone().ApplyMatrix4(o.LocalToWorld)
+
+					ray := math32.NewRay(a, b.Clone().SubVectors(b, a).Normalize())
+					distance := a.DistanceTo(b)
+					steps := int(distance / 5)
+					cells := make(map[int]RtNavmeshCellQuad)
+					for i := 0; i < steps; i++ {
+						p := ray.At(float32(i*5), nil)
+						cell, err := t.ResolveCell(p)
+						if err != nil {
+							logrus.Error(err)
+							continue
+						}
+
+						cells[cell.Index] = cell
+						cellContainsObject := false
+						for _, obj := range cell.Objects {
+							if obj.ID == o.ID {
+								cellContainsObject = true
+								break
+							}
+						}
+
+						if !cellContainsObject {
+							logrus.Infof("Cell %d does not contain object %d yet", cell.Index, o.ID)
+							cell.Objects = append(cell.Objects, o)
+						}
+					}
+
+					for _, cell := range cells {
+						e := RtNavmeshEdgeGlobal{RtNavmeshEdgeBase{
+							RtNavmeshEdgeMeshType: RtNavmeshEdgeMeshTypeTerrain,
+							Mesh:                  t,
+							Index:                 len(t.GlobalEdges) + 1,
+							Line: LineSegment{
+								A: a,
+								B: b,
+							},
+							Flag:         ge.Flag,
+							SrcDirection: 0,
+							DstDirection: 0,
+							SrcCellIndex: cell.Index,
+							DstCellIndex: ge.SrcCellIndex,
+							SrcCell:      &cell,
+							DstCell:      ge.SrcCell,
+							EventData:    ge.EventData,
+						},
+							int(t.Region.ID),
+							o.WorldID,
+						}
+
+						t.GlobalEdges = append(t.GlobalEdges, e)
+					}
+				}
+			}
+		}
+	}
+}
+
+func (t *RtNavmeshTerrain) ToJson() []byte {
+	t.DetectUnmappedObjectEdges()
 	var sb strings.Builder
 	sb.WriteString("{") // root open
-
 	sb.WriteString(fmt.Sprintf(`"file":"%s",`, t.Filename))
 	sb.WriteString(fmt.Sprintf(`"region":{"id":%d,"x":%d,"z":%d},`, t.Region.ID, t.Region.X, t.Region.Y))
+	sb.WriteString(`"heights": [`) // tiles open
+	for i, h := range t.heightMap {
+		sb.WriteString(fmt.Sprintf("%f", h))
+		if i < len(t.heightMap)-1 {
+			sb.WriteString(",")
+		}
+	}
+	sb.WriteString("],")
+	sb.WriteString(`"tiles": [`) // tiles open
+	for i, tile := range t.tileMap {
+		sb.WriteString("{") // tile open
+		sb.WriteString(fmt.Sprintf(`"cellId":%d,`, tile.CellIndex))
+		sb.WriteString(fmt.Sprintf(`"flag":%d`, tile.Flag))
+		sb.WriteString("}") // tile close
+		if i < len(t.tileMap)-1 {
+			sb.WriteString(",")
+		}
+	}
+	sb.WriteString("],")         // tiles close
 	sb.WriteString(`"cells": [`) // cells open
-
 	for i, c := range t.Cells {
 		sb.WriteString("{") // cell open
 		sb.WriteString(fmt.Sprintf(`"id":%d,`, c.Index))
@@ -196,8 +284,15 @@ func (t RtNavmeshTerrain) ToJson() []byte {
 		//y3 := t.ResolveHeight(math32.NewVector3(c.Rect.Max.X, 0, c.Rect.Min.Y))
 
 		sb.WriteString(fmt.Sprintf(`"min":{"x":%.6f,"y":%.6f,"z":%.6f},`, c.Rect.Min.X, y1, c.Rect.Min.Y))
-		sb.WriteString(fmt.Sprintf(`"max":{"x":%.6f,"y":%.6f,"z":%.6f}`, c.Rect.Max.X, y2, c.Rect.Max.Y))
-
+		sb.WriteString(fmt.Sprintf(`"max":{"x":%.6f,"y":%.6f,"z":%.6f},`, c.Rect.Max.X, y2, c.Rect.Max.Y))
+		sb.WriteString(fmt.Sprintf(`"objects": [`)) // objects open
+		for j, o := range c.Objects {
+			sb.WriteString(fmt.Sprintf("%d", o.ID))
+			if j < len(c.Objects)-1 {
+				sb.WriteString(",")
+			}
+		}
+		sb.WriteString("]") // objects close
 		sb.WriteString("}") // cell close
 		if i < len(t.Cells)-1 {
 			sb.WriteString(",")
@@ -210,6 +305,7 @@ func (t RtNavmeshTerrain) ToJson() []byte {
 
 		sb.WriteString("{") // object open
 		sb.WriteString(fmt.Sprintf(`"id":%d,`, oi.ID))
+
 		sb.WriteString(fmt.Sprintf(`"position":{"x":%.6f,"y":%.6f,"z":%.6f},`, oi.Position.X, oi.Position.Y, oi.Position.Z))
 		sb.WriteString(fmt.Sprintf(`"rotation":{"x":%.6f,"y":%.6f,"z":%.6f,"w":%.6f},`, oi.Rotation.X, oi.Rotation.Y, oi.Rotation.Z, oi.Rotation.W))
 
@@ -217,6 +313,7 @@ func (t RtNavmeshTerrain) ToJson() []byte {
 		for j, oc := range oi.Object.Cells {
 			sb.WriteString("{") // cell open
 			sb.WriteString(fmt.Sprintf(`"id":%d,`, oc.Index))
+			sb.WriteString(fmt.Sprintf(`"worldId":%d,`, oi.WorldID))
 			sb.WriteString(fmt.Sprintf(`"flag":%d,`, oc.Flag))
 
 			a := oc.Triangle.A.Clone().ApplyMatrix4(oi.LocalToWorld)
@@ -232,7 +329,61 @@ func (t RtNavmeshTerrain) ToJson() []byte {
 				sb.WriteString(",")
 			}
 		}
-		sb.WriteString("]") // cells close
+		sb.WriteString("],")                // cells close
+		sb.WriteString(`"internalEdges":[`) // internal edges open
+		for j, e := range oi.Object.InternalEdges {
+			a := e.Line.A.Clone().ApplyMatrix4(oi.LocalToWorld)
+			b := e.Line.B.Clone().ApplyMatrix4(oi.LocalToWorld)
+			sb.WriteString("{") // edge open
+			sb.WriteString(fmt.Sprintf(`"id":%d,`, e.Index))
+			sb.WriteString(fmt.Sprintf(`"flag":%d,`, e.Flag))
+			sb.WriteString(fmt.Sprintf(`"eventData":%d,`, e.EventData))
+			sb.WriteString(fmt.Sprintf(`"srcCellId":%d,`, e.SrcCellIndex))
+			sb.WriteString(fmt.Sprintf(`"dstCellId":%d,`, e.DstCellIndex))
+			sb.WriteString(fmt.Sprintf(`"srcDir":%d,`, e.SrcDirection))
+			sb.WriteString(fmt.Sprintf(`"dstDir":%d,`, e.DstDirection))
+			sb.WriteString(fmt.Sprintf(`"a":{"x":%.6f,"y":%.6f,"z":%.6f},`, a.X, a.Y, a.Z))
+			sb.WriteString(fmt.Sprintf(`"b":{"x":%.6f,"y":%.6f,"z":%.6f}`, b.X, b.Y, b.Z))
+			sb.WriteString("}")
+			if j < len(oi.Object.InternalEdges)-1 {
+				sb.WriteString(",")
+			}
+		}
+		sb.WriteString("],")              // internal edges close
+		sb.WriteString(`"globalEdges":[`) // global edges open
+		for j, e := range oi.Object.GlobalEdges {
+			a := e.Line.A.Clone().ApplyMatrix4(oi.LocalToWorld)
+			b := e.Line.B.Clone().ApplyMatrix4(oi.LocalToWorld)
+			sb.WriteString("{") // edge open
+			sb.WriteString(fmt.Sprintf(`"id":%d,`, e.Index))
+			sb.WriteString(fmt.Sprintf(`"flag":%d,`, e.Flag))
+			sb.WriteString(fmt.Sprintf(`"eventData":%d,`, e.EventData))
+			sb.WriteString(fmt.Sprintf(`"srcCellId":%d,`, e.SrcCellIndex))
+			sb.WriteString(fmt.Sprintf(`"dstCellId":%d,`, e.DstCellIndex))
+			sb.WriteString(fmt.Sprintf(`"srcDir":%d,`, e.SrcDirection))
+			sb.WriteString(fmt.Sprintf(`"dstDir":%d,`, e.DstDirection))
+			sb.WriteString(fmt.Sprintf(`"srcMeshId":%d,`, e.SrcMeshIndex))
+			sb.WriteString(fmt.Sprintf(`"dstMeshId":%d,`, e.DstMeshIndex))
+			sb.WriteString(fmt.Sprintf(`"a":{"x":%.6f,"y":%.6f,"z":%.6f},`, a.X, a.Y, a.Z))
+			sb.WriteString(fmt.Sprintf(`"b":{"x":%.6f,"y":%.6f,"z":%.6f}`, b.X, b.Y, b.Z))
+			sb.WriteString("}")
+			if j < len(oi.Object.GlobalEdges)-1 {
+				sb.WriteString(",")
+			}
+		}
+		sb.WriteString("],")            // global edges close
+		sb.WriteString(`"edgeLinks":[`) // edge links open
+		for j, e := range oi.EdgeLinks {
+			sb.WriteString("{") // edge link open
+			sb.WriteString(fmt.Sprintf(`"objId":%d,`, e.LinkedObjID))
+			sb.WriteString(fmt.Sprintf(`"objEdgeId":%d,`, e.LinkedObjEdgeID))
+			sb.WriteString(fmt.Sprintf(`"edgeId":%d`, e.EdgeID))
+			sb.WriteString("}") // edge link close
+			if j < len(oi.EdgeLinks)-1 {
+				sb.WriteString(",")
+			}
+		}
+		sb.WriteString("]") // edge links close
 		sb.WriteString("}") // object close
 		if i < len(t.Objects)-1 {
 			sb.WriteString(",")

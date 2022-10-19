@@ -31,6 +31,7 @@ func NewLoader(dataPk2Path string) *Loader {
 
 	reader := pk2.NewPk2Reader(dataPk2Path)
 	reader.IndexArchive()
+	reader.ExtractFiles("/Users/rmu/workspaces/private/sro-data2")
 	return &Loader{
 		Pk2Reader:      &reader,
 		DataPk2Path:    "Data",
@@ -377,14 +378,27 @@ func (l *Loader) loadTerrainObjectInstance(fileContent []byte, readIndex *int) R
 	}
 
 	globalEdgeLinkCount := binary.LittleEndian.Uint16(fileContent[globalEdgeLinkCountOffset : globalEdgeLinkCountOffset+2])
-
+	edgeLinks := make([]RtNavmeshEdgeLink, 0)
+	if globalEdgeLinkCount > 0 {
+		logrus.Infof("Object %d (%d) has %d global edge links", objectInstance.ID, objectInstance.WorldID, globalEdgeLinkCount)
+	} else {
+		logrus.Infof("Object %d (%d) has no global edge links", objectInstance.ID, objectInstance.WorldID)
+	}
 	for j := 0; j < int(globalEdgeLinkCount); j++ {
 		// TODO find out what this is for
-		//linkedObjIdOffset := *readIndex
-		//linkedObjEdgeIdOffset := linkedObjIdOffset + 2
-		//edgeIdOffset := linkedObjEdgeIdOffset + 2
+		linkedObjIdOffset := *readIndex
+		linkedObjEdgeIdOffset := linkedObjIdOffset + 2
+		edgeIdOffset := linkedObjEdgeIdOffset + 2
+
+		edgeLink := RtNavmeshEdgeLink{
+			LinkedObjID:     int16(utils.ByteArrayToUint16(fileContent[linkedObjIdOffset:linkedObjEdgeIdOffset])),
+			LinkedObjEdgeID: int16(utils.ByteArrayToUint16(fileContent[linkedObjEdgeIdOffset:edgeIdOffset])),
+			EdgeID:          int16(utils.ByteArrayToUint16(fileContent[edgeIdOffset : edgeIdOffset+2])),
+		}
 		*readIndex += 6
+		edgeLinks = append(edgeLinks, edgeLink)
 	}
+	objectInstance.EdgeLinks = edgeLinks
 	return objectInstance
 }
 

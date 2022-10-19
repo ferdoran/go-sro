@@ -38,6 +38,7 @@ type RtNavmeshEdgeBase struct {
 	DstCellIndex int
 	SrcCell      RtNavmeshCell
 	DstCell      RtNavmeshCell
+	EventData    byte
 }
 
 func (e RtNavmeshEdgeBase) GetType() RtNavmeshEdgeMeshType {

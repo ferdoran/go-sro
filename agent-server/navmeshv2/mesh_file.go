@@ -206,8 +206,8 @@ func (m *MeshFile) loadObjectInternalEdges(vertices []*math32.Vector3, object *R
 
 		if m.StructOption.IsEdge() {
 			// TODO
-			//eventZoneFlag := m.FileContent[m.fileReadIndex]
-			//iEdge.EventZoneFlag = eventZoneFlag
+			eventZoneFlag := m.FileContent[m.fileReadIndex]
+			iEdge.EventData = eventZoneFlag
 			m.fileReadIndex++
 		}
 
