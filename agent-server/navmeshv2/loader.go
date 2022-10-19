@@ -31,7 +31,6 @@ func NewLoader(dataPk2Path string) *Loader {
 
 	reader := pk2.NewPk2Reader(dataPk2Path)
 	reader.IndexArchive()
-	reader.ExtractFiles("/Users/rmu/workspaces/private/sro-data2")
 	return &Loader{
 		Pk2Reader:      &reader,
 		DataPk2Path:    "Data",
