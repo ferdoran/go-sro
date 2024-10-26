@@ -102,7 +102,7 @@ func moveItem(data server.PacketChannelData) {
 
 	world := service.GetWorldServiceInstance()
 	player, err := world.GetPlayerByCharName(data.Session.UserContext.CharName)
-	if err == nil {
+	if err != nil {
 		// player not online
 		logrus.Tracef("Player %s is not online\n", player.CharName)
 		return
